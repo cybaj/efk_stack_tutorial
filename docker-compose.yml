@@ -6,7 +6,7 @@ volumes:
 
 # Deploying three container services (fluentd, elasticsearch, and kibana)
 services:
-  fluentd: 
+  fluentd:
     build: ./fluentd
     links: # Sends incoming logs to the elasticsearch container.
       - elasticsearch
@@ -17,6 +17,8 @@ services:
       - 24224:24224/udp
   elasticsearch:
     image: elasticsearch:7.17.0
+    ports:
+      - 9200:9200
     expose: # Exposes the default port 9200
       - 9200
     environment:
@@ -33,4 +35,13 @@ services:
       - 5601:5601
     environment: # Defined host configuration
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  webapp:
+    image: nginx:alpine
+    ports:
+      - 8080:80
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: fluentdhost:24224
+        fluentd-async: "true"
 
